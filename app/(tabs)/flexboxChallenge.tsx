@@ -105,7 +105,10 @@ const styles = StyleSheet.create({
 
   word: {
     transform: [{ rotate: "-90deg" }],
-    fontSize: 60,
+    width: 500,
+    textAlign: "center",
+    textAlignVertical: "center",
+    fontSize: 80,
     fontWeight: "bold",
     letterSpacing: 30,
   },
