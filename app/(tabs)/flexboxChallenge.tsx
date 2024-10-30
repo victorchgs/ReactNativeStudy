@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
   },
 
   flex: {
-    backgroundColor: "green",
     height: "100%",
     width: "50%",
     flexDirection: "column",
