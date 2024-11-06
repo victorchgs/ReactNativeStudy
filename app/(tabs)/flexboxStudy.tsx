@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-export default function flexboxStudy() {
+export default function FlexboxStudy() {
   return (
     <View style={styles.view}>
       <View style={styles.container}>
