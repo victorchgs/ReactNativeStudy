@@ -30,6 +30,19 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="githubSearch"
+        options={{
+          title: "GitHub search",
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon
+              name={focused ? "logo-react" : "logo-react"}
+              color={color}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
