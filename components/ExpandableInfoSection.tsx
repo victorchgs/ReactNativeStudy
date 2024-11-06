@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
   Animated,
+  Easing,
 } from "react-native";
 
 type Props = {
@@ -39,6 +40,7 @@ export function ExpandableInfoSection({
   setIsReseted,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const animatedMaxHeight = useRef(new Animated.Value(0)).current;
   const animatedOpacity = useRef(new Animated.Value(0)).current;
 
   const toggleExpansion = () => {
@@ -47,9 +49,17 @@ export function ExpandableInfoSection({
       return;
     }
 
+    Animated.timing(animatedMaxHeight, {
+      toValue: isExpanded ? 0 : 500,
+      duration: 400,
+      easing: Easing.ease,
+      useNativeDriver: false,
+    }).start();
+
     Animated.timing(animatedOpacity, {
       toValue: isExpanded ? 0 : 1,
-      duration: 300,
+      duration: 400,
+      easing: Easing.ease,
       useNativeDriver: false,
     }).start();
 
@@ -83,9 +93,17 @@ export function ExpandableInfoSection({
     if (isReseted) {
       setIsExpanded(false);
 
+      Animated.timing(animatedMaxHeight, {
+        toValue: 0,
+        duration: 400,
+        easing: Easing.ease,
+        useNativeDriver: false,
+      }).start();
+
       Animated.timing(animatedOpacity, {
         toValue: 0,
-        duration: 300,
+        duration: 400,
+        easing: Easing.ease,
         useNativeDriver: false,
       }).start();
 
@@ -119,13 +137,14 @@ export function ExpandableInfoSection({
         </TouchableOpacity>
       </View>
       <Animated.View
-        style={[styles.expandedContent, { opacity: animatedOpacity }]}
+        style={[
+          styles.expandedContent,
+          { maxHeight: animatedMaxHeight, opacity: animatedOpacity },
+        ]}
       >
-        {isExpanded && (
-          <Text style={{ alignSelf: "center", marginTop: 5 }}>
-            {getContent()}
-          </Text>
-        )}
+        <Text style={{ alignSelf: "center", marginTop: 5 }}>
+          {getContent()}
+        </Text>
       </Animated.View>
     </View>
   );
