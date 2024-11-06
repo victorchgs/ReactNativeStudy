@@ -88,6 +88,7 @@ export default function GithubSearch() {
               }));
             });
 
+          setIsReseted(true);
           setShowModal(false);
           setError("");
           setUsername("");
