@@ -21,18 +21,17 @@ export default function GithubSearch() {
   const [avatar, setAvatar] = useState("");
   const [name, setName] = useState("");
   const [login, setLogin] = useState("");
+  const [bio, setBio] = useState("");
+  const [orgsUrl, setOrgsUrl] = useState("");
+  const [reposUrl, setReposUrl] = useState("");
+  const [followersUrl, setFollowersUrl] = useState("");
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
-
-  const titleToRoute: { [key: string]: string } = {
-    Bio: "Bio",
-    Orgs: "Orgs",
-    Repositórios: "Repos",
-    Seguidores: "Followers",
-    Localização: "Location",
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleSearch = () => {
+    setLoading(true);
+
     fetch(`https://api.github.com/users/${username}`)
       .then((response) => response.json())
       .then((data) => {
@@ -42,6 +41,10 @@ export default function GithubSearch() {
           setAvatar(data.avatar_url);
           setName(data.name);
           setLogin(data.login);
+          setBio(data.bio);
+          setOrgsUrl(data.organizations_url);
+          setReposUrl(data.repos_url);
+          setFollowersUrl(data.followers_url);
 
           setShowModal(false);
           setUsername("");
@@ -50,6 +53,9 @@ export default function GithubSearch() {
       })
       .catch(() => {
         setError("Erro ao buscar usuário. Tente novamente.");
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
@@ -62,13 +68,36 @@ export default function GithubSearch() {
   };
 
   const handleNavigation = (sectionTitle: string) => {
-    const route = titleToRoute[sectionTitle];
-
     if (login) {
-      if (route) {
-        router.push(`./githubSearch/user${route}`);
-      } else {
-        showToast("Rota não encontrada.");
+      switch (sectionTitle) {
+        case "Bio":
+          router.push({ pathname: "./githubSearch/userBio", params: { bio } });
+          break;
+
+        case "Orgs":
+          router.push({
+            pathname: "./githubSearch/userOrgs",
+            params: { orgsUrl },
+          });
+          break;
+
+        case "Repositórios":
+          router.push({
+            pathname: "./githubSearch/userRepos",
+            params: { reposUrl },
+          });
+          break;
+
+        case "Seguidores":
+          router.push({
+            pathname: "./githubSearch/userFollowers",
+            params: { followersUrl },
+          });
+          break;
+
+        default:
+          showToast("Rota não encontrada.");
+          break;
       }
     } else {
       showToast("Por favor, primeiro realize a busca pelo usuário.");
@@ -80,6 +109,10 @@ export default function GithubSearch() {
     setAvatar("");
     setName("");
     setLogin("");
+    setBio("");
+    setOrgsUrl("");
+    setReposUrl("");
+    setFollowersUrl("");
   };
 
   return (
@@ -117,9 +150,13 @@ export default function GithubSearch() {
                 onChangeText={setUsername}
                 placeholder="Nome de usuário"
               />
-              <TouchableOpacity onPress={handleSearch}>
-                <FontAwesome name="search" color="black" size={20} />
-              </TouchableOpacity>
+              {loading ? (
+                <FontAwesome name="ellipsis-h" color="black" size={24} />
+              ) : (
+                <TouchableOpacity onPress={handleSearch}>
+                  <FontAwesome name="search" color="black" size={20} />
+                </TouchableOpacity>
+              )}
             </View>
             {error && <Text style={styles.errorText}>{error}</Text>}
           </View>
@@ -155,7 +192,7 @@ export default function GithubSearch() {
             name ? (
               <Text style={styles.userName}>{name}</Text>
             ) : (
-              <Text style={styles.userName}>Nome não disponível</Text>
+              <Text style={styles.userName}>Nome indisponível</Text>
             )
           ) : (
             <Text style={styles.usernamePlaceholder}>
@@ -170,35 +207,24 @@ export default function GithubSearch() {
               iconName="user-o"
               title="Bio"
               description="Um pouco sobre o usuário"
-              login={login}
               onNavigation={handleNavigation}
             />
             <UserInfoSection
               iconName="globe"
               title="Orgs"
               description="Organizações que o usuário faz parte"
-              login={login}
               onNavigation={handleNavigation}
             />
             <UserInfoSection
               iconName="book"
               title="Repositórios"
               description="Lista contendo todos os repositórios"
-              login={login}
               onNavigation={handleNavigation}
             />
             <UserInfoSection
               iconName="star-o"
               title="Seguidores"
               description="Lista de seguidores"
-              login={login}
-              onNavigation={handleNavigation}
-            />
-            <UserInfoSection
-              iconName="map-marker"
-              title="Localização"
-              description="País de origem"
-              login={login}
               onNavigation={handleNavigation}
               last
             />
@@ -317,7 +343,7 @@ const styles = StyleSheet.create({
   userLogin: { fontSize: 20, color: "#8B8C90" },
 
   userInfoView: {
-    height: "48%",
+    maxHeight: "48%",
     width: "90%",
     borderRadius: 30,
     borderWidth: 1,

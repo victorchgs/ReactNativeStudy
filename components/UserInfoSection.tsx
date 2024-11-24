@@ -1,19 +1,10 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  ToastAndroid,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
   iconName: keyof typeof FontAwesome.glyphMap;
   title: string;
   description: string;
-  login: string;
   onNavigation: (info: string) => void;
   last?: boolean;
 };
@@ -22,7 +13,6 @@ export function UserInfoSection({
   iconName,
   title,
   description,
-  login,
   onNavigation,
   last,
 }: Props) {
