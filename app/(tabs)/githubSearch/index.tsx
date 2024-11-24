@@ -1,102 +1,118 @@
-import { ExpandableInfoSection } from "@/components/ExpandableInfoSection";
+import { UserInfoSection } from "@/components/UserInfoSection";
 import { FontAwesome } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Image,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
 
 export default function GithubSearch() {
-  const [error, setError] = useState("");
-  const [isReseted, setIsReseted] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const router = useRouter();
   const [username, setUsername] = useState("");
-
-  const [userData, setUserData] = useState({
-    avatar: "",
-    bio: "",
-    login: "",
-    name: "",
-    organizations: [],
-    repositories: [],
-    followers: [],
-    location: "",
-  });
-
-  const handleReset = () => {
-    setUserData({
-      avatar: "",
-      bio: "",
-      login: "",
-      name: "",
-      organizations: [],
-      repositories: [],
-      followers: [],
-      location: "",
-    });
-    setIsReseted(true);
-  };
+  const [avatar, setAvatar] = useState("");
+  const [name, setName] = useState("");
+  const [login, setLogin] = useState("");
+  const [bio, setBio] = useState("");
+  const [orgsUrl, setOrgsUrl] = useState("");
+  const [reposUrl, setReposUrl] = useState("");
+  const [followersUrl, setFollowersUrl] = useState("");
+  const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSearch = () => {
+    setLoading(true);
+
     fetch(`https://api.github.com/users/${username}`)
       .then((response) => response.json())
       .then((data) => {
         if (data.message === "Not Found") {
           setError("Usuário não encontrado, tente novamente.");
         } else {
-          setUserData({
-            avatar: data.avatar_url,
-            bio: data.bio,
-            login: data.login,
-            name: data.name,
-            organizations: [],
-            repositories: [],
-            followers: [],
-            location: data.location,
-          });
+          setAvatar(data.avatar_url);
+          setName(data.name);
+          setLogin(data.login);
+          setBio(data.bio);
+          setOrgsUrl(data.organizations_url);
+          setReposUrl(data.repos_url);
+          setFollowersUrl(data.followers_url);
 
-          fetch(data.organizations_url)
-            .then((res) => res.json())
-            .then((orgs) => {
-              setUserData((prevData) => ({
-                ...prevData,
-                organizations: orgs,
-              }));
-            });
-
-          fetch(data.repos_url)
-            .then((res) => res.json())
-            .then((repos) => {
-              setUserData((prevData) => ({
-                ...prevData,
-                repositories: repos,
-              }));
-            });
-
-          fetch(data.followers_url)
-            .then((res) => res.json())
-            .then((followersData) => {
-              setUserData((prevData) => ({
-                ...prevData,
-                followers: followersData,
-              }));
-            });
-
-          setIsReseted(true);
           setShowModal(false);
-          setError("");
           setUsername("");
+          setError("");
         }
       })
       .catch(() => {
         setError("Erro ao buscar usuário. Tente novamente.");
+      })
+      .finally(() => {
+        setLoading(false);
       });
+  };
+
+  const showToast = (message: string) => {
+    if (Platform.OS === "android") {
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+      console.warn(message); // Pode ser substituído por uma biblioteca de toast para iOS, como `react-native-root-toast`
+    }
+  };
+
+  const handleNavigation = (sectionTitle: string) => {
+    if (login) {
+      switch (sectionTitle) {
+        case "Bio":
+          router.push({ pathname: "./githubSearch/userBio", params: { bio } });
+          break;
+
+        case "Orgs":
+          router.push({
+            pathname: "./githubSearch/userOrgs",
+            params: { orgsUrl },
+          });
+          break;
+
+        case "Repositórios":
+          router.push({
+            pathname: "./githubSearch/userRepos",
+            params: { reposUrl },
+          });
+          break;
+
+        case "Seguidores":
+          router.push({
+            pathname: "./githubSearch/userFollowers",
+            params: { followersUrl },
+          });
+          break;
+
+        default:
+          showToast("Rota não encontrada.");
+          break;
+      }
+    } else {
+      showToast("Por favor, primeiro realize a busca pelo usuário.");
+    }
+  };
+
+  const handleReset = () => {
+    setUsername("");
+    setAvatar("");
+    setName("");
+    setLogin("");
+    setBio("");
+    setOrgsUrl("");
+    setReposUrl("");
+    setFollowersUrl("");
   };
 
   return (
@@ -114,6 +130,9 @@ export default function GithubSearch() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalView}>
             <View style={styles.closeModalView}>
+              <Text style={styles.modalLabel}>
+                Insira o nome de usuário do GitHub
+              </Text>
               <TouchableOpacity
                 onPress={() => {
                   setShowModal(false);
@@ -124,11 +143,6 @@ export default function GithubSearch() {
                 <FontAwesome name="close" color="black" size={20} />
               </TouchableOpacity>
             </View>
-            <View style={{ width: "100%" }}>
-              <Text style={styles.inputLabel}>
-                Insira o nome de usuário do GitHub
-              </Text>
-            </View>
             <View style={styles.searchView}>
               <TextInput
                 style={styles.modalInput}
@@ -136,9 +150,13 @@ export default function GithubSearch() {
                 onChangeText={setUsername}
                 placeholder="Nome de usuário"
               />
-              <TouchableOpacity onPress={handleSearch}>
-                <FontAwesome name="search" color="black" size={20} />
-              </TouchableOpacity>
+              {loading ? (
+                <FontAwesome name="ellipsis-h" color="black" size={24} />
+              ) : (
+                <TouchableOpacity onPress={handleSearch}>
+                  <FontAwesome name="search" color="black" size={20} />
+                </TouchableOpacity>
+              )}
             </View>
             {error && <Text style={styles.errorText}>{error}</Text>}
           </View>
@@ -155,9 +173,9 @@ export default function GithubSearch() {
           <View>
             <Image
               source={
-                userData?.avatar
-                  ? { uri: userData?.avatar }
-                  : require("../../assets/images/profile-placeholder.png")
+                login
+                  ? { uri: avatar }
+                  : require("@/assets/images/profile-placeholder.png")
               }
               style={styles.avatarImage}
             />
@@ -170,58 +188,44 @@ export default function GithubSearch() {
               <FontAwesome name="search" color="white" size={24} />
             </TouchableOpacity>
           </View>
-          {userData?.name ? (
-            <Text style={styles.userName}>{userData?.name}</Text>
+          {login ? (
+            name ? (
+              <Text style={styles.userName}>{name}</Text>
+            ) : (
+              <Text style={styles.userName}>Nome indisponível</Text>
+            )
           ) : (
             <Text style={styles.usernamePlaceholder}>
               Faça a busca pelo usuário
             </Text>
           )}
-          {userData?.login && (
-            <Text style={styles.userLogin}>{`@${userData?.login}`}</Text>
-          )}
+          {login && <Text style={styles.userLogin}>{`@${login}`}</Text>}
         </View>
         <View style={styles.userInfoView}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <ExpandableInfoSection
+            <UserInfoSection
               iconName="user-o"
               title="Bio"
               description="Um pouco sobre o usuário"
-              userData={userData}
-              isReseted={isReseted}
-              setIsReseted={setIsReseted}
+              onNavigation={handleNavigation}
             />
-            <ExpandableInfoSection
+            <UserInfoSection
               iconName="globe"
               title="Orgs"
               description="Organizações que o usuário faz parte"
-              userData={userData}
-              isReseted={isReseted}
-              setIsReseted={setIsReseted}
+              onNavigation={handleNavigation}
             />
-            <ExpandableInfoSection
+            <UserInfoSection
               iconName="book"
               title="Repositórios"
               description="Lista contendo todos os repositórios"
-              userData={userData}
-              isReseted={isReseted}
-              setIsReseted={setIsReseted}
+              onNavigation={handleNavigation}
             />
-            <ExpandableInfoSection
+            <UserInfoSection
               iconName="star-o"
               title="Seguidores"
               description="Lista de seguidores"
-              userData={userData}
-              isReseted={isReseted}
-              setIsReseted={setIsReseted}
-            />
-            <ExpandableInfoSection
-              iconName="map-marker"
-              title="Localização"
-              description="País de origem"
-              userData={userData}
-              isReseted={isReseted}
-              setIsReseted={setIsReseted}
+              onNavigation={handleNavigation}
               last
             />
           </ScrollView>
@@ -257,6 +261,7 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "white",
     borderRadius: 10,
+    justifyContent: "space-between",
     alignItems: "center",
     elevation: 7,
     shadowColor: "black",
@@ -266,22 +271,23 @@ const styles = StyleSheet.create({
   },
 
   closeModalView: {
-    alignItems: "flex-end",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     width: "100%",
-    marginBottom: 20,
   },
 
-  inputLabel: { fontSize: 16, marginLeft: 16 },
+  modalLabel: { fontSize: 16, marginLeft: 14 },
 
   searchView: {
     flexDirection: "row",
     justifyContent: "space-evenly",
     alignItems: "center",
+    marginVertical: 12,
     width: "100%",
   },
 
   modalInput: {
-    height: "70%",
     width: "80%",
     borderWidth: 1,
     borderRadius: 5,
@@ -290,7 +296,6 @@ const styles = StyleSheet.create({
 
   errorText: {
     color: "red",
-    marginTop: 10,
     marginLeft: 16,
     fontSize: 14,
     alignSelf: "flex-start",
@@ -338,7 +343,7 @@ const styles = StyleSheet.create({
   userLogin: { fontSize: 20, color: "#8B8C90" },
 
   userInfoView: {
-    height: "48%",
+    maxHeight: "48%",
     width: "90%",
     borderRadius: 30,
     borderWidth: 1,
