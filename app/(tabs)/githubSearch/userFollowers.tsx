@@ -30,12 +30,11 @@ export default function UserFollowers() {
         .then((response) => response.json())
         .then((data) => {
           setFollowers(data);
+
+          setLoading(false);
         })
         .catch((error) => {
           setError(`Erro ao buscar seguidores. ${error.message}`);
-        })
-        .finally(() => {
-          setLoading(false);
         });
     }
   }, [followersUrl]);

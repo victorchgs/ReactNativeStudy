@@ -28,12 +28,11 @@ export default function UserRepos() {
         .then((response) => response.json())
         .then((data) => {
           setRepos(data);
+
+          setLoading(false);
         })
         .catch((error) => {
           setError(`Erro ao buscar repositórios. ${error.message}`);
-        })
-        .finally(() => {
-          setLoading(false);
         });
     }
   }, [reposUrl]);

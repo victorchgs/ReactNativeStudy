@@ -8,7 +8,6 @@ export default function StackLayout() {
       <Stack.Screen name="userOrgs" />
       <Stack.Screen name="userRepos" />
       <Stack.Screen name="userFollowers" />
-      <Stack.Screen name="userLocation" />
     </Stack>
   );
 }

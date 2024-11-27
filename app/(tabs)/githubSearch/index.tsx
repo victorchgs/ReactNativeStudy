@@ -37,6 +37,7 @@ export default function GithubSearch() {
       .then((data) => {
         if (data.message === "Not Found") {
           setError("Usuário não encontrado, tente novamente.");
+          setLoading(false);
         } else {
           setAvatar(data.avatar_url);
           setName(data.name);
@@ -49,13 +50,11 @@ export default function GithubSearch() {
           setShowModal(false);
           setUsername("");
           setError("");
+          setLoading(false);
         }
       })
       .catch(() => {
         setError("Erro ao buscar usuário. Tente novamente.");
-      })
-      .finally(() => {
-        setLoading(false);
       });
   };
 

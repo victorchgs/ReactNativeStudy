@@ -22,12 +22,11 @@ export default function UserOrgs() {
         .then((response) => response.json())
         .then((data) => {
           setOrgs(data);
+
+          setLoading(false);
         })
         .catch((error) => {
           setError(`Erro ao buscar organizações. ${error.message}`);
-        })
-        .finally(() => {
-          setLoading(false);
         });
     }
   }, [orgsUrl]);
