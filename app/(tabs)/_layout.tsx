@@ -10,10 +10,7 @@ export default function TabLayout() {
           title: "Flexbox study",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon
-              name={focused ? "logo-react" : "logo-react"}
-              color={color}
-            />
+            <TabBarIcon name={focused ? "react" : "react"} color={color} />
           ),
         }}
       />
@@ -23,10 +20,7 @@ export default function TabLayout() {
           title: "Flexbox challenge",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon
-              name={focused ? "logo-react" : "logo-react"}
-              color={color}
-            />
+            <TabBarIcon name={focused ? "react" : "react"} color={color} />
           ),
         }}
       />
@@ -37,7 +31,20 @@ export default function TabLayout() {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              name={focused ? "logo-react" : "logo-react"}
+              name={focused ? "github" : "github"}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="weatherView"
+        options={{
+          title: "Weather View",
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon
+              name={focused ? "weather-cloudy" : "weather-cloudy"}
               color={color}
             />
           ),
